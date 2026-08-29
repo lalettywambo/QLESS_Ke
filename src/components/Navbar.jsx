@@ -1,53 +1,123 @@
-export default function Navbar({ currentPage, onNavigate }) {
-  const links = ["Dashboard", "Browse", "Bookings", "Notifications"];
+import { useState } from "react";
+import Button from "../components/Button";
+import Input from "../components/Input";
+import { saveUser } from "../lib/auth";
+
+export default function SignUp({ onDone, onGoToLogin }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [errors, setErrors] = useState({});
+
+  function handleSubmit() {
+    const found = {};
+
+    if (name.trim().length < 2) found.name = "Enter your full name.";
+    if (!email.includes("@")) found.email = "That doesn't look like an email.";
+    if (password.length < 6) found.password = "Use at least 6 characters.";
+    if (confirm !== password) found.confirm = "Passwords don't match.";
+
+    setErrors(found);
+
+    if (Object.keys(found).length > 0) return;
+
+    const user = { name: name.trim(), email: email.trim().toLowerCase(), password };
+    saveUser(user);
+    onDone(user);
+  }
 
   return (
-    <header
-      className="h-[72px] bg-white/90 border-b border-line-soft
-                 flex items-center justify-between px-10"
-    >
-      <div className="flex items-center gap-2.5">
-        <svg width="30" height="30" viewBox="0 0 28 28" fill="none">
-          <rect width="28" height="28" rx="9" fill="#35624F" />
-          <circle cx="13" cy="13" r="6" stroke="#D9EDE2" strokeWidth="2.2" />
-          <path d="M17 17.4L20.5 21" stroke="#D9EDE2" strokeWidth="2.2" strokeLinecap="round" />
-        </svg>
-        <div className="flex flex-col leading-none">
-          <span className="text-[19px] font-extrabold tracking-tight">Qless</span>
-          <span className="text-[9.5px] font-bold tracking-[0.14em] text-ink-3 uppercase mt-0.5">
-            Kenya
-          </span>
-        </div>
-      </div>
-
-      <nav className="flex items-center gap-7">
-        {links.map((link) => (
-          <button
-            key={link}
-            onClick={() => onNavigate(link)}
-            className={
-              link === currentPage
-                ? "text-sm font-bold text-sage"
-                : "text-sm font-medium text-ink-2 hover:text-ink"
-            }
-          >
-            {link}
+    <AuthShell
+      title="Create your account"
+      subtitle="Join a queue from anywhere in Kenya."
+      footer={
+        <>
+          Already have an account?{" "}
+          <button onClick={onGoToLogin} className="font-semibold text-ink underline">
+            Log in
           </button>
-        ))}
-      </nav>
+        </>
+      }
+    >
+      <Input
+        label="Full name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Laletty Murathe"
+        error={errors.name}
+      />
+      <Input
+        label="Email address"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="you@example.com"
+        error={errors.email}
+      />
+      <Input
+        label="Password"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="At least 6 characters"
+        error={errors.password}
+      />
+      <Input
+        label="Confirm password"
+        type="password"
+        value={confirm}
+        onChange={(e) => setConfirm(e.target.value)}
+        error={errors.confirm}
+      />
 
-      <div className="flex items-center gap-3.5">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M15 7.6v-.8a5 5 0 00-10 0v.8L3.6 15h12.8L15 7.6z" stroke="#5B6A63" strokeWidth="1.6" />
-          <path d="M8.2 15a1.8 1.8 0 003.6 0" stroke="#5B6A63" strokeWidth="1.6" />
-        </svg>
-        <div
-          className="w-9 h-9 rounded-full bg-sage-100 text-sage
-                     flex items-center justify-center text-[13px] font-bold"
-        >
-          LW
+      <Button fullWidth size="lg" onClick={handleSubmit}>
+        Create account
+      </Button>
+    </AuthShell>
+  );
+}
+
+export function AuthShell({ title, subtitle, children, footer }) {
+  return (
+    <div className="min-h-screen flex">
+      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-brand to-brand-dark p-14 flex-col justify-between">
+        <div className="flex items-center gap-2">
+          <svg width="34" height="34" viewBox="0 0 28 28" fill="none">
+            <rect width="28" height="28" rx="9" fill="white" />
+            <circle cx="13" cy="13" r="6" stroke="#FF5A5F" strokeWidth="2.2" />
+            <path d="M17 17.4L20.5 21" stroke="#FF5A5F" strokeWidth="2.2" strokeLinecap="round" />
+          </svg>
+          <span className="text-2xl font-extrabold text-white">qless</span>
+        </div>
+
+        <div className="flex flex-col gap-5">
+          <h2 className="text-[44px] font-extrabold leading-[1.1] tracking-tight text-white">
+            Your time is worth
+            <br />
+            more than a bench.
+          </h2>
+          <p className="text-lg text-white/80 max-w-md">
+            Take a ticket before you leave the house. Track your place in line.
+            Arrive when it's nearly your turn.
+          </p>
+        </div>
+
+        <p className="text-sm text-white/70">Free for everyone joining a queue.</p>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center px-6 py-14">
+        <div className="w-full max-w-[420px] flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-[32px] font-extrabold tracking-tight">{title}</h1>
+            <p className="text-ink-2">{subtitle}</p>
+          </div>
+
+          <div className="flex flex-col gap-4">{children}</div>
+
+          <p className="text-sm text-ink-2 text-center">{footer}</p>
         </div>
       </div>
-    </header>
+    </div>
   );
 }

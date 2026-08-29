@@ -1,16 +1,17 @@
 export default function StatusBadge({ tone = "neutral", children }) {
   const tones = {
-    ok: "bg-ok-bg text-ok",
-    warn: "bg-warn-bg text-warn",
-    danger: "bg-danger-bg text-danger",
-    info: "bg-info-bg text-info",
-    neutral: "bg-[#F0EEE7] text-ink-2",
+    ok: "bg-ok-soft text-ok",
+    teal: "bg-teal-soft text-teal",
+    warn: "bg-warn-soft text-warn",
+    alert: "bg-alert-soft text-alert",
+    brand: "bg-brand-soft text-brand-dark",
+    neutral: "bg-mist text-ink-2",
   };
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full
-                  text-xs font-semibold ${tones[tone]}`}
+      className={`inline-flex items-center gap-1.5 h-7 px-3 rounded-full
+                  text-[13px] font-semibold whitespace-nowrap ${tones[tone]}`}
     >
       <span className="w-1.5 h-1.5 rounded-full bg-current" />
       {children}
@@ -19,7 +20,7 @@ export default function StatusBadge({ tone = "neutral", children }) {
 }
 
 export function waitTone(minutes) {
-  if (minutes <= 15) return "ok";
-  if (minutes <= 40) return "warn";
-  return "danger";
+  if (minutes <= 15) return "teal";
+  if (minutes <= 35) return "warn";
+  return "alert";
 }
