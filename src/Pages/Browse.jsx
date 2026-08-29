@@ -1,16 +1,20 @@
 import { useState } from "react";
-import BusinessCard from "../components/BusinessCard";
-import { businesses } from "../data/businesses";
+import BusinessCard from "../components/Businesscard";
+import { businesses } from "../data/business";
 
-const categories = ["All", "Hospitals", "Banks", "Government", "Salons", "Car wash"];
+const categories = ["All", "Hospital", "Bank", "Government", "Beauty", "Valet"];
 
-export default function Browse({ onJoinQueue }) {
+export default function Browse({ onSelect }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
 
-  const results = businesses.filter((b) =>
-    (b.name + b.service + b.area).toLowerCase().includes(query.toLowerCase())
-  );
+  const results = businesses.filter((b) => {
+    const haystack = (b.name + b.service + b.area).toLowerCase();
+    const matchesQuery = haystack.includes(query.toLowerCase());
+    const matchesCategory =
+      category === "All" || haystack.includes(category.toLowerCase());
+    return matchesQuery && matchesCategory;
+  });
 
   return (
     <div className="flex flex-col gap-8">
@@ -58,13 +62,9 @@ export default function Browse({ onJoinQueue }) {
       </div>
 
       {results.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-9">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-7">
           {results.map((business) => (
-            <BusinessCard
-              key={business.id}
-              business={business}
-              onJoinQueue={onJoinQueue}
-            />
+            <BusinessCard key={business.id} business={business} onSelect={onSelect} />
           ))}
         </div>
       ) : (

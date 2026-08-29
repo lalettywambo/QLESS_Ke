@@ -2,7 +2,7 @@ import Button from "../components/Button";
 import StatusBadge, { waitTone } from "../components/Statusbadge";
 
 export default function Dashboard({ user, ticket, business, onViewQueue, onBrowse }) {
-  const firstName = user.name.split(" ")[0];
+  const firstName = user ? user.name.split(" ")[0] : "there";
 
   return (
     <div className="flex flex-col gap-8">
