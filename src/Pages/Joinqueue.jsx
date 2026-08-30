@@ -2,7 +2,7 @@ import { useState } from "react";
 import Button from "../components/Button";
 import StatusBadge, { waitTone } from "../components/Statusbadge";
 
-export default function JoinQueue({ business, onConfirm, onCancel }) {
+export default function JoinQueue({ business, isLoggedIn, onConfirm, onCancel }) {
   const [people, setPeople] = useState(1);
   const [smsAlerts, setSmsAlerts] = useState(true);
 
@@ -99,8 +99,15 @@ export default function JoinQueue({ business, onConfirm, onCancel }) {
           </div>
 
           <Button fullWidth size="lg" onClick={() => onConfirm(business.id, people)}>
-            Join queue
+            {isLoggedIn ? "Join queue" : "Continue to join"}
           </Button>
+
+          {!isLoggedIn && (
+            <p className="text-[13px] text-ink-2 text-center -mt-2">
+              You'll create a quick account on the next step.
+            </p>
+          )}
+
           <Button fullWidth variant="ghost" onClick={onCancel}>
             Cancel
           </Button>
