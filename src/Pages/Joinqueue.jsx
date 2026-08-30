@@ -3,7 +3,7 @@ import Button from "../components/Button";
 import StatusBadge, { waitTone } from "../components/Statusbadge";
 
 export default function JoinQueue({ business, isLoggedIn, onConfirm, onCancel }) {
-  const [people, setPeople] = useState(1);
+  const [people, setPeople] = useState(1); //stores the number of people joining
   const [smsAlerts, setSmsAlerts] = useState(true);
 
   return (
