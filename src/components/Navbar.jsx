@@ -1,123 +1,64 @@
-import { useState } from "react";
-import Button from "../components/Button";
-import Input from "../components/Input";
-import { saveUser } from "../lib/auth";
+import Button from "./Button";
 
-export default function SignUp({ onDone, onGoToLogin }) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [errors, setErrors] = useState({});
-
-  function handleSubmit() {
-    const found = {};
-
-    if (name.trim().length < 2) found.name = "Enter your full name.";
-    if (!email.includes("@")) found.email = "That doesn't look like an email.";
-    if (password.length < 6) found.password = "Use at least 6 characters.";
-    if (confirm !== password) found.confirm = "Passwords don't match.";
-
-    setErrors(found);
-
-    if (Object.keys(found).length > 0) return;
-
-    const user = { name: name.trim(), email: email.trim().toLowerCase(), password };
-    saveUser(user);
-    onDone(user);
-  }
+export default function Navbar({ page, user, onNavigate, onLogout }) {
+  const links = [
+    { id: "browse", label: "Browse" },
+    { id: "dashboard", label: "My queue" },
+  ];
 
   return (
-    <AuthShell
-      title="Create your account"
-      subtitle="Join a queue from anywhere in Kenya."
-      footer={
-        <>
-          Already have an account?{" "}
-          <button onClick={onGoToLogin} className="font-semibold text-ink underline">
-            Log in
-          </button>
-        </>
-      }
-    >
-      <Input
-        label="Full name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Laletty Murathe"
-        error={errors.name}
-      />
-      <Input
-        label="Email address"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="you@example.com"
-        error={errors.email}
-      />
-      <Input
-        label="Password"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder="At least 6 characters"
-        error={errors.password}
-      />
-      <Input
-        label="Confirm password"
-        type="password"
-        value={confirm}
-        onChange={(e) => setConfirm(e.target.value)}
-        error={errors.confirm}
-      />
-
-      <Button fullWidth size="lg" onClick={handleSubmit}>
-        Create account
-      </Button>
-    </AuthShell>
-  );
-}
-
-export function AuthShell({ title, subtitle, children, footer }) {
-  return (
-    <div className="min-h-screen flex">
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-brand to-brand-dark p-14 flex-col justify-between">
-        <div className="flex items-center gap-2">
-          <svg width="34" height="34" viewBox="0 0 28 28" fill="none">
-            <rect width="28" height="28" rx="9" fill="white" />
-            <circle cx="13" cy="13" r="6" stroke="#FF5A5F" strokeWidth="2.2" />
-            <path d="M17 17.4L20.5 21" stroke="#FF5A5F" strokeWidth="2.2" strokeLinecap="round" />
+    <header className="sticky top-0 z-20 bg-canvas border-b border-line-soft">
+      <div className="max-w-[1280px] mx-auto px-6 h-20 flex items-center justify-between gap-6">
+        <button
+          onClick={() => onNavigate("browse")}
+          className="flex items-center gap-2 shrink-0"
+        >
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect width="28" height="28" rx="9" fill="#FF5A5F" />
+            <circle cx="13" cy="13" r="6" stroke="white" strokeWidth="2.2" />
+            <path d="M17 17.4L20.5 21" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
           </svg>
-          <span className="text-2xl font-extrabold text-white">qless</span>
-        </div>
+          <span className="text-xl font-extrabold tracking-tight">qless</span>
+        </button>
 
-        <div className="flex flex-col gap-5">
-          <h2 className="text-[44px] font-extrabold leading-[1.1] tracking-tight text-white">
-            Your time is worth
-            <br />
-            more than a bench.
-          </h2>
-          <p className="text-lg text-white/80 max-w-md">
-            Take a ticket before you leave the house. Track your place in line.
-            Arrive when it's nearly your turn.
-          </p>
-        </div>
+        <nav className="flex items-center gap-1">
+          {links.map((link) => (
+            <button
+              key={link.id}
+              onClick={() => onNavigate(link.id)}
+              className={`h-10 px-4 rounded-full text-sm transition-colors ${
+                page === link.id
+                  ? "bg-mist font-semibold text-ink"
+                  : "text-ink-2 hover:bg-mist hover:text-ink"
+              }`}
+            >
+              {link.label}
+            </button>
+          ))}
+        </nav>
 
-        <p className="text-sm text-white/70">Free for everyone joining a queue.</p>
+        <div className="flex items-center gap-2">
+          {user ? (
+            <>
+              <span className="hidden sm:flex h-9 w-9 rounded-full bg-ink text-white text-sm font-bold items-center justify-center">
+                {user.name.charAt(0).toUpperCase()}
+              </span>
+              <Button size="sm" variant="outline" onClick={onLogout}>
+                Log out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button size="sm" variant="ghost" onClick={() => onNavigate("login")}>
+                Log in
+              </Button>
+              <Button size="sm" onClick={() => onNavigate("signup")}>
+                Sign up
+              </Button>
+            </>
+          )}
+        </div>
       </div>
-
-      <div className="flex-1 flex items-center justify-center px-6 py-14">
-        <div className="w-full max-w-[420px] flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <h1 className="text-[32px] font-extrabold tracking-tight">{title}</h1>
-            <p className="text-ink-2">{subtitle}</p>
-          </div>
-
-          <div className="flex flex-col gap-4">{children}</div>
-
-          <p className="text-sm text-ink-2 text-center">{footer}</p>
-        </div>
-      </div>
-    </div>
+    </header>
   );
 }
