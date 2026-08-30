@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Button from "../components/Button";
 import Input from "../components/Input";
-import { checkLogin } from "../lib/auth";
+import { checkLogin } from "../Lib/Auth";
 import { AuthShell } from "./Signup";
 
 export default function Login({ onDone, onGoToSignUp }) {
@@ -9,7 +9,9 @@ export default function Login({ onDone, onGoToSignUp }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  function handleSubmit() {
+  function handleSubmit(e) {
+    e.preventDefault();
+
     const result = checkLogin(email, password);
 
     if (!result.ok) {
@@ -25,10 +27,15 @@ export default function Login({ onDone, onGoToSignUp }) {
     <AuthShell
       title="Welcome back"
       subtitle="Log in to pick up where your queue left off."
+      onSubmit={handleSubmit}
       footer={
         <>
           New to qless?{" "}
-          <button onClick={onGoToSignUp} className="font-semibold text-ink underline">
+          <button
+            type="button"
+            onClick={onGoToSignUp}
+            className="font-semibold text-ink underline"
+          >
             Create an account
           </button>
         </>
@@ -54,7 +61,7 @@ export default function Login({ onDone, onGoToSignUp }) {
         </div>
       )}
 
-      <Button fullWidth size="lg" onClick={handleSubmit}>
+      <Button type="submit" fullWidth size="lg">
         Log in
       </Button>
     </AuthShell>
