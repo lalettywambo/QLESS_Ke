@@ -4,6 +4,7 @@ export default function Button({
   size = "md",
   fullWidth = false,
   disabled = false,
+  type = "button",
   onClick,
 }) {
   const base =
@@ -30,6 +31,7 @@ export default function Button({
 
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
       className={`${base} ${sizes[size]} ${
