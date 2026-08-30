@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Button from "../components/Button";
 import Input from "../components/Input";
-import { saveUser } from "../lib/auth";
+import { saveUser } from "../Lib/Auth";
 
 export default function SignUp({ onDone, onGoToLogin }) {
   const [name, setName] = useState("");
@@ -10,7 +10,9 @@ export default function SignUp({ onDone, onGoToLogin }) {
   const [confirm, setConfirm] = useState("");
   const [errors, setErrors] = useState({});
 
-  function handleSubmit() {
+  function handleSubmit(e) {
+    e.preventDefault();
+
     const found = {};
 
     if (name.trim().length < 2) found.name = "Enter your full name.";
@@ -30,11 +32,16 @@ export default function SignUp({ onDone, onGoToLogin }) {
   return (
     <AuthShell
       title="Create your account"
-      subtitle="Join a queue from anywhere in Kenya."
+      subtitle="Last step before your ticket is issued."
+      onSubmit={handleSubmit}
       footer={
         <>
           Already have an account?{" "}
-          <button onClick={onGoToLogin} className="font-semibold text-ink underline">
+          <button
+            type="button"
+            onClick={onGoToLogin}
+            className="font-semibold text-ink underline"
+          >
             Log in
           </button>
         </>
@@ -71,14 +78,14 @@ export default function SignUp({ onDone, onGoToLogin }) {
         error={errors.confirm}
       />
 
-      <Button fullWidth size="lg" onClick={handleSubmit}>
+      <Button type="submit" fullWidth size="lg">
         Create account
       </Button>
     </AuthShell>
   );
 }
 
-export function AuthShell({ title, subtitle, children, footer }) {
+export function AuthShell({ title, subtitle, children, footer, onSubmit }) {
   return (
     <div className="min-h-screen flex">
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-brand to-brand-dark p-14 flex-col justify-between">
@@ -107,7 +114,7 @@ export function AuthShell({ title, subtitle, children, footer }) {
       </div>
 
       <div className="flex-1 flex items-center justify-center px-6 py-14">
-        <div className="w-full max-w-[420px] flex flex-col gap-6">
+        <form onSubmit={onSubmit} className="w-full max-w-[420px] flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <h1 className="text-[32px] font-extrabold tracking-tight">{title}</h1>
             <p className="text-ink-2">{subtitle}</p>
@@ -116,7 +123,7 @@ export function AuthShell({ title, subtitle, children, footer }) {
           <div className="flex flex-col gap-4">{children}</div>
 
           <p className="text-sm text-ink-2 text-center">{footer}</p>
-        </div>
+        </form>
       </div>
     </div>
   );
