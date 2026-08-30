@@ -1,5 +1,5 @@
 import Button from "../components/Button";
-import QueueTicket from "../components/QueueTicket";
+import QueueTicket from "../components/Queueticket";
 import StatusBadge from "../components/Statusbadge";
 
 export default function LiveQueue({ ticket, business, onLeave, onBrowse }) {
