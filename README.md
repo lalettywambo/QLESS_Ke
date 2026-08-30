@@ -1,95 +1,67 @@
 # Qless Kenya
 
-A digital queue and appointment platform for Kenyan service businesses. Take a ticket before you leave the house, watch the line move in real time, and arrive when it's nearly your turn.
+Queue and appointment app for Kenyan service businesses. Join a queue from your phone, track your position, show up when it's nearly your turn.
 
-Built with React 19, Vite and Tailwind v4.
+React 19, Vite, Tailwind v4.
 
----
+## Setup
 
-## The idea
-
-At a hospital, bank or Huduma Centre, the only way to hold your place in line is to physically stand in it — with no way of knowing whether that's ten minutes or two hours. Qless turns the paper ticket into a live one.
-
-Businesses subscribe for queue management, notifications and analytics. Joining a queue is free for customers.
-
----
-
-## What works today
-
-| Screen | File | What it does |
-| --- | --- | --- |
-| Browse | `Pages/Browse.jsx` | Search and filter businesses, see live wait times |
-| Join queue | `Pages/Joinqueue.jsx` | Pick party size, set alerts, confirm |
-| Live queue | `Pages/Livequeue.jsx` | Ticket number, position rail, progress, upcoming numbers |
-| Dashboard | `Pages/Dashboard.jsx` | Active ticket summary, or an empty state |
-| Sign up | `Pages/Signup.jsx` | Four-field form with per-field validation |
-| Log in | `Pages/Login.jsx` | Email and password against saved account |
-
-The full loop runs end to end: browse → join → live tracking → leave.
-
----
-
-## Getting started
-
-You'll need Node 18 or newer.
+Needs Node 18+.
 
 ```bash
-git clone <your-repo-url>
-cd QLESS_Ke
+git clone https://github.com/lalettyw/qless-ke.git
+cd qless-ke
 npm install
 npm run dev
 ```
 
-Open the URL Vite prints, usually `http://localhost:5173`.
+Runs on http://localhost:5173
 
-Other commands:
+`npm run build` for production, `npm run preview` to check the build locally, `npm run lint` for eslint.
 
-```bash
-npm run build     # production build into dist/
-npm run preview   # serve the production build locally
-npm run lint      # eslint
-```
+## Screens
 
----
+| Screen | File |
+| --- | --- |
+| Browse | `Pages/Browse.jsx` |
+| Join queue | `Pages/Joinqueue.jsx` |
+| Live queue | `Pages/Livequeue.jsx` |
+| Dashboard | `Pages/Dashboard.jsx` |
+| Sign up | `Pages/Signup.jsx` |
+| Log in | `Pages/Login.jsx` |
 
-## Project structure
+Browse to join to live tracking works end to end.
+
+## Structure
 
 ```
 src/
-  App.jsx              all state, page switching, auth gate
-  main.jsx             entry point
-  index.css            the @theme block — whole palette lives here
+  App.jsx              state, page switching, auth gate
+  main.jsx
+  index.css            @theme block, all colours
 
   components/
-    Navbar.jsx         top bar, current page, log in / log out
-    Button.jsx         5 variants, 3 sizes, disabled
+    Navbar.jsx
+    Button.jsx         5 variants, 3 sizes
     Input.jsx          labelled field with error state
-    Statusbadge.jsx    coloured pills + waitTone()
-    Businesscard.jsx   one card in the browse grid
-    Queueticket.jsx    the ticket, with a live "updated Xs ago" timer
+    Statusbadge.jsx    pills + waitTone()
+    Businesscard.jsx
+    Queueticket.jsx    has its own timer
 
   Pages/
-    Browse.jsx
-    Joinqueue.jsx
-    Livequeue.jsx
-    Dashboard.jsx
-    Login.jsx
-    Signup.jsx         also exports AuthShell, the split-screen layout
+    Browse.jsx  Joinqueue.jsx  Livequeue.jsx
+    Dashboard.jsx  Login.jsx  Signup.jsx
 
   Lib/
-    Auth.js            saveUser / getUser / clearUser / checkLogin
+    Auth.js            localStorage read/write
 
   data/
     business.js        6 sample businesses
 ```
 
----
+## State
 
-## How it works
-
-### State lives in one place
-
-`App.jsx` holds five pieces of state. Everything else is told what to show and reports back when clicked — props down, events up.
+Everything lives in `App.jsx`:
 
 ```js
 const [page, setPage]             = useState("browse");
@@ -99,92 +71,62 @@ const [ticket, setTicket]         = useState(null);
 const [afterAuth, setAfterAuth]   = useState("browse");
 ```
 
-Page switching is `useState` rather than React Router. That's a deliberate choice while the app is small — Router goes in when the back button needs to work or pages need shareable URLs.
+Pages get told what to show and call functions back up. No routing library yet, `page` is just a string and the bottom of App.jsx switches on it.
 
-`selectedId` stores an id, not a whole business. `App` looks the object up with `.find()` when it needs it, so there's only ever one copy of the truth in `data/business.js`.
+`selectedId` holds an id, not the whole business. App looks it up with `.find()` so there's one copy of the data.
 
-### Auth is deferred to the end of the flow
+## Auth
 
-You can browse and configure a queue without an account. Auth is only required at the moment of joining:
+You can browse and set up a queue without an account. Signing up only happens when you actually press Join:
 
 ```
-Browse → pick a business → Join queue
-                              │
-                    logged in ├──→ ticket created → Live queue
-                              │
-                   logged out └──→ Sign up → back to Join queue
+Join queue → logged in?  yes → ticket, go to Live queue
+                         no  → Sign up, then back to Join
 ```
 
-`afterAuth` is how `App.jsx` remembers where to return once the account is made.
+`afterAuth` stores where to return to.
 
-### Accounts are stored in the browser
+`Lib/Auth.js` writes to one localStorage key, `qless_user`. `checkLogin` returns `{ ok, error }` rather than true/false so Login can show a useful message.
 
-`Lib/Auth.js` reads and writes a single localStorage key, `qless_user`. `saveUser` stringifies the object on the way in, `getUser` parses it on the way out and returns `null` when nothing is stored.
+## Styling
 
-`checkLogin` returns an object rather than a boolean:
-
-```js
-{ ok: true, user }                         // success
-{ ok: false, error: "That password isn't right." }
-```
-
-That way `Login.jsx` can show a specific message instead of a generic failure.
-
-### Styling
-
-Tailwind v4 — no `tailwind.config.js`. The entire palette is a `@theme` block in `src/index.css`, and each variable generates its own utilities:
+No `tailwind.config.js`. Tailwind v4 reads the theme from CSS:
 
 ```css
 @theme {
-  --color-brand: #ff5a5f;   /* → bg-brand, text-brand, border-brand */
+  --color-brand: #ff5a5f;   /* bg-brand, text-brand, border-brand */
   --color-ink:   #222222;
   --color-teal:  #00a699;
 }
 ```
 
-Change a hex there and the whole app follows. Nothing in the JSX has a raw colour in it.
+Coral is brand and buttons. Wait times use their own colours (teal under 15 min, amber to 35, red over) so a bad wait doesn't look like a button.
 
-Colour is doing two separate jobs and they're kept apart on purpose. Coral is brand and primary actions. Queue states run on their own scale — teal under 15 minutes, amber to 35, red beyond — so "long wait" still reads as a warning rather than blending into the buttons.
+## Not done yet
 
----
+- Passwords sit in localStorage in plain text. Fine for now, can't ship.
+- One account per browser. Signing up twice overwrites the first.
+- No backend. Businesses are hardcoded and queue positions don't move.
+- Back button doesn't work, no URLs per page.
+- Mobile layouts not done.
 
-## Known limitations
+## Contributing
 
-These are deliberate for a learning-stage build, not oversights.
+Laletty Murathe, reviewed by Edmond Omwega.
 
-- **Passwords are stored in plain text in localStorage.** Readable by anyone with DevTools open. This cannot ship. A real version sends the password to a server, hashes it, and returns only a session token.
-- **One account per browser.** There's a single storage key, so signing up twice overwrites the first account.
-- **No backend.** Businesses come from `data/business.js`, and queue positions don't actually move.
-- **No routing.** The back button doesn't navigate, and pages have no URLs of their own.
-- **Desktop-first.** Layouts hold up down to tablet, but the mobile pass hasn't been done — and the consumer side needs it most, since people check their queue while moving around.
+Branch off main, small commits, PR against main. Run `npm run build` before pushing, dev mode lets things through that the build won't.
 
----
+Good first things to pick up:
+
+- Category pills don't filter yet, only highlight. Search already does it, copy that.
+- Ticket disappears on refresh. Save it like Auth.js saves the user.
+- After signing up mid-join you land back on the Join page and have to press it again.
+
+Filenames are case sensitive on Linux but not Windows, so a wrong capital runs fine locally and fails on Vercel. `git ls-files src` shows what git actually has. Also run `git config core.ignorecase false` once, otherwise renaming `auth.js` to `Auth.js` does nothing.
 
 ## Roadmap
 
-- Bookings and appointments page (placeholder exists in `App.jsx`)
-- Business-side dashboard: live queue table, call next, analytics
-- Real backend with proper authentication
-- SMS alerts before your number is called
-- Category filters wired to actual filtering
-- Persist the active ticket so a refresh doesn't lose it
-
----
-
-## Conventions
-
-**Filenames are case-sensitive on Linux, but not on Windows.** The app can run locally with a wrong capital and then fail to build on Vercel or Netlify. Imports must match filenames exactly.
-
-If you need to fix a name, rename it to something else first, then to the name you want — a case-only rename doesn't register on Windows, in the filesystem or in git. Reload the VS Code window afterwards, since the editor caches the old name and shows red squiggles on imports that are actually fine.
-
-If you're setting up on Windows, this also helps:
-
-```bash
-git config core.ignorecase false
-```
-
----
-
-## Author
-
-Laletty Murathe
+- Bookings page (placeholder in App.jsx)
+- Business dashboard: live queue table, call next, analytics
+- Backend and real auth
+- SMS before your turn
