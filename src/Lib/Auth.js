@@ -24,3 +24,4 @@ export function checkLogin(email, password) {
 
   return { ok: true, user };
 }
+ 
