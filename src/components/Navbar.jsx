@@ -22,7 +22,7 @@ export default function Navbar({ page, user, onNavigate, onLogout }) {
         </button>
 
         <nav className="flex items-center gap-1">
-          {links.map((link) => (
+          {links.map((link) => (   // stores the browse and queue navigation links
             <button
               key={link.id}
               onClick={() => onNavigate(link.id)}
@@ -38,7 +38,7 @@ export default function Navbar({ page, user, onNavigate, onLogout }) {
         </nav>
 
         <div className="flex items-center gap-2">
-          {user ? (
+          {user ? (  // checks whether the user is logged in
             <>
               <span className="hidden sm:flex h-9 w-9 rounded-full bg-ink text-white text-sm font-bold items-center justify-center">
                 {user.name.charAt(0).toUpperCase()}

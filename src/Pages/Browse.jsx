@@ -9,11 +9,11 @@ export default function Browse({ onSelect }) {
   const [category, setCategory] = useState("All");
 
   const results = businesses.filter((b) => {
-    const haystack = (b.name + b.service + b.area).toLowerCase();
-    const matchesQuery = haystack.includes(query.toLowerCase());
+    const haystack = (b.name + b.service + b.area).toLowerCase();   // ensures the search by the user isn't affected  by capital/small letters
+    const matchesQuery = haystack.includes(query.toLowerCase());    // checks if wht the user has typed matches the details.
     const matchesCategory =
       category === "All" || haystack.includes(category.toLowerCase());
-    return matchesQuery && matchesCategory;
+    return matchesQuery && matchesCategory;                         // The business must satisfy bothe serach and category conditions.
   });
 
   return (

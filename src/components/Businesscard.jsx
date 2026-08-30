@@ -1,10 +1,11 @@
 import StatusBadge, { waitTone } from "./Statusbadge";
 
-const photos = {
+const photos = {   // colors of the cards
   coral: "from-[#FFB3A7] to-[#FF7369]",
   teal: "from-[#8FD9D0] to-[#2CA79B]",
   sand: "from-[#F3DDB8] to-[#DCB878]",
   sky: "from-[#AFCDE8] to-[#6E9EC6]",
+
 };
 
 export default function BusinessCard({ business, onSelect }) {
@@ -18,8 +19,8 @@ export default function BusinessCard({ business, onSelect }) {
       className="text-left group disabled:cursor-not-allowed"
     >
       <div
-        className={`h-32 rounded-xl bg-gradient-to-br ${photos[tone]}
-                    relative overflow-hidden ${isOpen ? "" : "grayscale opacity-60"}`}
+        className={`h-32 rounded-xl bg-gradient-to-br ${photos[tone]}   
+                    relative overflow-hidden ${isOpen ? "" : "grayscale opacity-60"}`} //if the card is closed the card is grayscale and faded
       >
         <div className="absolute top-2 left-2">
           {isOpen ? (

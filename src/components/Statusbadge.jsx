@@ -1,3 +1,8 @@
+//tone- determines the badge's color/style
+//children- the text displayed inside the badge
+//neutral- default tone if none is provided
+
+
 export default function StatusBadge({ tone = "neutral", children }) {
   const tones = {
     ok: "bg-ok-soft text-ok",

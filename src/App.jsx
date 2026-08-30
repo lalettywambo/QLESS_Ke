@@ -9,13 +9,13 @@ import Login from "./Pages/Login";
 import SignUp from "./Pages/Signup";
 
 import { businesses } from "./data/business";
-import { getUser, clearUser } from "./Lib/Auth";
+import { getUser, clearUser } from "./lib/Auth";
 
 export default function App() {
-  const [page, setPage] = useState("browse");
-  const [user, setUser] = useState(getUser());
-  const [selectedId, setSelectedId] = useState(null);
-  const [ticket, setTicket] = useState(null);
+  const [page, setPage] = useState("browse");  // which page is currently shown
+  const [user, setUser] = useState(getUser());  // the logged in user
+  const [selectedId, setSelectedId] = useState(null);  //the selected business
+  const [ticket, setTicket] = useState(null); // users ticket queue
   // where to send the user once they finish logging in or signing up
   const [afterAuth, setAfterAuth] = useState("browse");
 

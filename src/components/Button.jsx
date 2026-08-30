@@ -1,11 +1,11 @@
 export default function Button({
-  children,
-  variant = "primary",
-  size = "md",
-  fullWidth = false,
-  disabled = false,
-  type = "button",
-  onClick,
+  children,             //content inside the btn
+  variant = "primary",  //controls its style
+  size = "md",          //contols its size
+  fullWidth = false,    //makes its full width   
+  disabled = false,     //disables the button if its true
+  type = "button",      // determones the btn type
+  onClick,              
 }) {
   const base =
     "inline-flex items-center justify-center gap-2 rounded-xl font-semibold " +
