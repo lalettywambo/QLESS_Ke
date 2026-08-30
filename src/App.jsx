@@ -9,7 +9,7 @@ import Login from "./Pages/Login";
 import SignUp from "./Pages/Signup";
 
 import { businesses } from "./data/business";
-import { getUser, clearUser } from "./lib/Auth";
+import { getUser, clearUser } from "./Lib/Auth";
 
 export default function App() {
   const [page, setPage] = useState("browse");  // which page is currently shown
