@@ -1,46 +1,138 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Routes, Route, Navigate, Outlet, useNavigate, useParams, useLocation } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Browse from "./Pages/Browse";
 import JoinQueue from "./Pages/Joinqueue";
 import Dashboard from "./Pages/Dashboard";
 import LiveQueue from "./Pages/Livequeue";
-import Login from "./Pages/Login";
-import SignUp from "./Pages/Signup";
+import SignIn from "./Pages/Signin";
 
 import { businesses } from "./data/business";
-import { getUser, clearUser } from "./Lib/Auth";
+import { watchUser, logOut } from "./Lib/Auth";
 
 export default function App() {
-  const [page, setPage] = useState("browse");  // which page is currently shown
-  const [user, setUser] = useState(getUser());  // the logged in user
-  const [selectedId, setSelectedId] = useState(null);  //the selected business
+  const [user, setUser] = useState(null);  // the logged in user
+  const [checkingUser, setCheckingUser] = useState(true);  // waiting on firebase
   const [ticket, setTicket] = useState(null); // users ticket queue
-  // where to send the user once they finish logging in or signing up
-  const [afterAuth, setAfterAuth] = useState("browse");
+  const navigate = useNavigate();
 
-  const selectedBusiness = businesses.find((b) => b.id === selectedId);
+  // firebase tells us who is signed in, now and whenever that changes
+  useEffect(() => {
+    return watchUser((nextUser) => {
+      setUser(nextUser);
+      setCheckingUser(false);
+    });
+  }, []);
+
   const ticketBusiness = ticket
     ? businesses.find((b) => b.id === ticket.businessId)
     : null;
 
-  function handleSelectBusiness(businessId) {
-    setSelectedId(businessId);
-    setPage("join");
+  async function handleLogout() {
+    await logOut();
+    setTicket(null);
+    navigate("/");
   }
 
-  function handleConfirmJoin(businessId, people) {
+  if (checkingUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-ink-2">Loading…</p>
+      </div>
+    );
+  }
+
+  return (
+    <Routes>
+      <Route path="/signin" element={<SignInRoute user={user} />} />
+
+      <Route element={<Layout user={user} onLogout={handleLogout} />}>
+        <Route path="/" element={<Browse onSelect={(id) => navigate(`/join/${id}`)} />} />
+
+        <Route
+          path="/join/:businessId"
+          element={<JoinRoute user={user} onJoined={setTicket} />}
+        />
+
+        <Route
+          path="/queue"
+          element={
+            <Dashboard
+              user={user}
+              ticket={ticket}
+              business={ticketBusiness}
+              onViewQueue={() => navigate("/live")}
+              onBrowse={() => navigate("/")}
+            />
+          }
+        />
+
+        <Route
+          path="/live"
+          element={
+            ticket && ticketBusiness ? (
+              <LiveQueue
+                ticket={ticket}
+                business={ticketBusiness}
+                onLeave={() => {
+                  setTicket(null);
+                  navigate("/");
+                }}
+                onBrowse={() => navigate("/")}
+              />
+            ) : (
+              <Navigate to="/queue" replace />
+            )
+          }
+        />
+
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
+  );
+}
+
+function Layout({ user, onLogout }) {
+  return (
+    <div className="min-h-screen bg-canvas font-sans">
+      <Navbar user={user} onLogout={onLogout} />
+      <main className="max-w-[1280px] mx-auto px-6 py-10">
+        <Outlet />
+      </main>
+    </div>
+  );
+}
+
+function SignInRoute({ user }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  // where the user was headed before we asked them to sign in
+  const from = location.state?.from ?? "/";
+
+  if (user) return <Navigate to={from} replace />;
+
+  return <SignIn onDone={() => navigate(from, { replace: true })} onCancel={() => navigate("/")} />;
+}
+
+function JoinRoute({ user, onJoined }) {
+  const { businessId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const business = businesses.find((b) => b.id === Number(businessId));
+
+  if (!business) return <NotFound />;
+
+  function handleConfirm(id, people) {
     // auth is only required at the very end of the flow
     if (!user) {
-      setAfterAuth("join");
-      setPage("signup");
+      navigate("/signin", { state: { from: location.pathname } });
       return;
     }
 
-    const business = businesses.find((b) => b.id === businessId);
-
-    setTicket({
-      businessId,
+    onJoined({
+      businessId: id,
       people,
       number: `${business.nowServing.split("-")[0]}-${String(
         Number(business.nowServing.split("-")[1]) + business.peopleWaiting
@@ -51,91 +143,32 @@ export default function App() {
       expectedAt: "10:07 AM",
     });
 
-    setPage("live");
-  }
-
-  function handleAuthDone(newUser) {
-    setUser(newUser);
-    setPage(afterAuth);
-  }
-
-  function handleLogout() {
-    clearUser();
-    setUser(null);
-    setTicket(null);
-    setPage("browse");
-  }
-
-  function handleNavigate(next) {
-    if (next === "login" || next === "signup") setAfterAuth("browse");
-    setPage(next);
-  }
-
-  if (page === "signup") {
-    return (
-      <SignUp onDone={handleAuthDone} onGoToLogin={() => setPage("login")} />
-    );
-  }
-
-  if (page === "login") {
-    return (
-      <Login onDone={handleAuthDone} onGoToSignUp={() => setPage("signup")} />
-    );
+    navigate("/live");
   }
 
   return (
-    <div className="min-h-screen bg-canvas font-sans">
-      <Navbar
-        page={page}
-        user={user}
-        onNavigate={handleNavigate}
-        onLogout={handleLogout}
-      />
+    <JoinQueue
+      business={business}
+      isLoggedIn={Boolean(user)}
+      onConfirm={handleConfirm}
+      onCancel={() => navigate("/")}
+    />
+  );
+}
 
-      <main className="max-w-[1280px] mx-auto px-6 py-10">
-        {page === "browse" && <Browse onSelect={handleSelectBusiness} />}
+function NotFound() {
+  const navigate = useNavigate();
 
-        {page === "join" && selectedBusiness && (
-          <JoinQueue
-            business={selectedBusiness}
-            isLoggedIn={Boolean(user)}
-            onConfirm={handleConfirmJoin}
-            onCancel={() => setPage("browse")}
-          />
-        )}
-
-        {page === "dashboard" && (
-          <Dashboard
-            user={user}
-            ticket={ticket}
-            business={ticketBusiness}
-            onViewQueue={() => setPage("live")}
-            onBrowse={() => setPage("browse")}
-          />
-        )}
-
-        {page === "live" && ticket && ticketBusiness && (
-          <LiveQueue
-            ticket={ticket}
-            business={ticketBusiness}
-            onLeave={() => {
-              setTicket(null);
-              setPage("browse");
-            }}
-            onBrowse={() => setPage("browse")}
-          />
-        )}
-
-        {page === "live" && !ticket && (
-          <Dashboard
-            user={user}
-            ticket={null}
-            business={null}
-            onViewQueue={() => setPage("live")}
-            onBrowse={() => setPage("browse")}
-          />
-        )}
-      </main>
+  return (
+    <div className="py-20 text-center flex flex-col items-center gap-3">
+      <h1 className="text-3xl font-extrabold tracking-tight">Page not found</h1>
+      <p className="text-ink-2">That link doesn't lead anywhere.</p>
+      <button
+        onClick={() => navigate("/")}
+        className="font-semibold text-ink underline"
+      >
+        Back to browsing
+      </button>
     </div>
   );
 }
